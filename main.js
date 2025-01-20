@@ -66,22 +66,15 @@ if (args) {
         for (let sourcePort in proxies[destinationAddress]) {
             logger.info(`PROXY: ${sourcePort} --> ${destinationAddress}:${proxies[destinationAddress][sourcePort]}`);
             try {
-            }
                 tcpProxy.createProxy(sourcePort, destinationAddress, proxies[destinationAddress][sourcePort]);
                 logger.info(`Proxy created for ${sourcePort} --> ${destinationAddress}:${proxies[destinationAddress][sourcePort]}`);
             } catch (err) {
                 logger.error('Failed to create proxy:', err);
+                // Continuar con el siguiente proxy en lugar de detener el proceso
+                continue;
             }
         }
     }
 
     return 0;
-}
-        }
-
-        return 0;
-    } catch (err) {
-        logger.error('Error en el proceso principal:', err);
-        process.exit(-1);
-    }
 }
