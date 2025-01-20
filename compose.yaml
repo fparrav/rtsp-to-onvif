@@ -1,6 +1,6 @@
 services:
   rtsp-to-onvif:
-    image: kulasolutions/rtsp-to-onvif:latest
+    image: fparrav/rtsp-to-onvif:latest
     hostname: rtsp-to-onvif
     #restart: unless-stopped
     volumes:

@@ -55,7 +55,15 @@ if (args) {
     for (let destinationAddress in proxies) {
         for (let sourcePort in proxies[destinationAddress]) {
             logger.info(`PROXY: ${sourcePort} --> ${destinationAddress}:${proxies[destinationAddress][sourcePort]}`);
-            tcpProxy.createProxy(sourcePort, destinationAddress, proxies[destinationAddress][sourcePort]);
+            const proxy = tcpProxy.createProxy(sourcePort, destinationAddress, proxies[destinationAddress][sourcePort]);
+            
+            proxy.on('error', (err) => {
+                logger.error('Proxy error:', err);
+            });
+
+            proxy.on('close', () => {
+                logger.warn(`Connection closed for ${destinationAddress}:${sourcePort}`);
+            });
         }
     }
 
