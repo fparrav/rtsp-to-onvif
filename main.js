@@ -5,7 +5,6 @@ const logger = require('simple-node-logger').createSimpleLogger();
 const OnvifServer = require('./src/onvif-server');
 const { readAndCheckConfig } = require('./src/config-tools');
 
-
 const parser = new argparse.ArgumentParser({
     description: 'Virtual RTSP to ONVIF proxy'
 });
@@ -13,6 +12,17 @@ const parser = new argparse.ArgumentParser({
 parser.add_argument('config', { help: 'config filename to use', nargs: '?' });
 
 let args = parser.parse_args();
+
+// Manejar errores no capturados
+process.on('uncaughtException', (err) => {
+    logger.error('Uncaught Exception:', err);
+    // Opcional: Reiniciar el proceso o realizar limpieza
+});
+
+process.on('unhandledRejection', (reason, promise) => {
+    logger.error('Unhandled Rejection at:', promise, 'reason:', reason);
+    // Opcional: Reiniciar el proceso o realizar limpieza
+});
 
 if (args) {
     if (process.env.DEBUG) {
@@ -56,6 +66,7 @@ if (args) {
         for (let sourcePort in proxies[destinationAddress]) {
             logger.info(`PROXY: ${sourcePort} --> ${destinationAddress}:${proxies[destinationAddress][sourcePort]}`);
             try {
+            }
                 tcpProxy.createProxy(sourcePort, destinationAddress, proxies[destinationAddress][sourcePort]);
                 logger.info(`Proxy created for ${sourcePort} --> ${destinationAddress}:${proxies[destinationAddress][sourcePort]}`);
             } catch (err) {
@@ -65,4 +76,12 @@ if (args) {
     }
 
     return 0;
+}
+        }
+
+        return 0;
+    } catch (err) {
+        logger.error('Error en el proceso principal:', err);
+        process.exit(-1);
+    }
 }
