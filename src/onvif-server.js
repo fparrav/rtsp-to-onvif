@@ -72,7 +72,7 @@ module.exports = class OnvifServer {
                         GovLength: this.config.highQuality.framerate,
                         H264Profile: 'Main'
                     },
-                    SessionTimeout: 'PT1000S'
+                    SessionTimeout: 'PT3600S' // Aumentar el timeout a 1 hora
                 }
             }
         ];
@@ -114,7 +114,7 @@ module.exports = class OnvifServer {
                             GovLength: this.config.lowQuality.framerate,
                             H264Profile: 'Main'
                         },
-                        SessionTimeout: 'PT1000S'
+                        SessionTimeout: 'PT3600S' // Aumentar el timeout a 1 hora
                     }
                 }
             );
