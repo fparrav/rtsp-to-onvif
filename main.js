@@ -58,6 +58,22 @@ if (args) {
             try {
                 const proxy = tcpProxy.createProxy(sourcePort, destinationAddress, proxies[destinationAddress][sourcePort]);
                 logger.info(`Proxy created for ${sourcePort} --> ${destinationAddress}:${proxies[destinationAddress][sourcePort]}`);
+
+                proxy.on('data', (data) => {
+                    logger.trace(`Data received on ${sourcePort}: ${data}`);
+                });
+
+                proxy.on('end', () => {
+                    logger.warn(`Connection ended for ${destinationAddress}:${sourcePort}`);
+                });
+
+                proxy.on('error', (err) => {
+                    logger.error('Proxy error:', err);
+                });
+
+                proxy.on('close', () => {
+                    logger.warn(`Connection closed for ${destinationAddress}:${sourcePort}`);
+                });
             } catch (err) {
                 logger.error('Failed to create proxy:', err);
             }

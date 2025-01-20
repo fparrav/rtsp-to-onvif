@@ -371,13 +371,13 @@ module.exports = class OnvifServer {
             console.debug(`SERVER: ${data}`);
             //there is no logger in this context
         };
-        // this.deviceService.on('request', (request, methodName) => {
-        //     this.logger.debug(`SERVER: ${this.config.name} - DeviceService: ${methodName}`);
-        // });
+        this.deviceService.on('request', (request, methodName) => {
+            this.logger.debug(`SERVER: ${this.config.name} - DeviceService: ${methodName}`);
+        });
 
-        // this.mediaService.on('request', (request, methodName) => {
-        //     this.logger.debug(`SERVER: ${this.config.name} -  MediaService: ${methodName}`);
-        // });
+        this.mediaService.on('request', (request, methodName) => {
+            this.logger.debug(`SERVER: ${this.config.name} -  MediaService: ${methodName}`);
+        });
     }
 
     startDiscovery() {
