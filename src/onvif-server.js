@@ -351,6 +351,11 @@ module.exports = class OnvifServer {
             this.logger.error(`SERVER: ${this.config.name} - HTTP Server Error: ${err.message}`);
         });
 
+        // Agregar manejador para el evento 'close' del servidor HTTP
+        this.server.on('close', () => {
+            this.logger.warn(`SERVER: ${this.config.name} - HTTP Server closed`);
+        });
+
         this.server.listen(this.config.ports.server, this.config.hostname);
 
         this.deviceService = soap.listen(this.server, {
@@ -365,6 +370,11 @@ module.exports = class OnvifServer {
             this.logger.error(`SERVER: ${this.config.name} - DeviceService Error: ${err.message}`);
         });
 
+        // Agregar manejador para el evento 'close' del servicio SOAP de dispositivo
+        this.deviceService.on('close', () => {
+            this.logger.warn(`SERVER: ${this.config.name} - DeviceService closed`);
+        });
+
         this.mediaService = soap.listen(this.server, {
             path: '/onvif/media_service',
             services: this.onvif,
@@ -375,6 +385,11 @@ module.exports = class OnvifServer {
         // Agregar manejador de errores para el servicio SOAP de medios
         this.mediaService.on('error', (err) => {
             this.logger.error(`SERVER: ${this.config.name} - MediaService Error: ${err.message}`);
+        });
+
+        // Agregar manejador para el evento 'close' del servicio SOAP de medios
+        this.mediaService.on('close', () => {
+            this.logger.warn(`SERVER: ${this.config.name} - MediaService closed`);
         });
     }
 
@@ -460,6 +475,12 @@ module.exports = class OnvifServer {
                     return dgram.createSocket('udp4').send(responseBuffer, 0, responseBuffer.length, remote.port, remote.address);
                 }
             });
+        });
+
+        // Agregar manejador de errores para el socket de descubrimiento
+        this.discoverySocket.on('error', (err) => {
+            this.logger.error(`SERVER: ${this.config.name} - Discovery Socket Error: ${err.message}`);
+            this.discoverySocket.close();
         });
 
         this.discoverySocket.bind(3702, () => {
