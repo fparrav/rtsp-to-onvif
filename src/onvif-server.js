@@ -343,6 +343,12 @@ module.exports = class OnvifServer {
         this.logger.info(`SERVER: ${this.config.name} - HTTP listening on ${this.config.hostname}:${this.config.ports.server}`);
 
         this.server = http.createServer(this.listen);
+
+        // Agregar manejador de errores para el servidor HTTP
+        this.server.on('error', (err) => {
+            this.logger.error(`SERVER: ${this.config.name} - HTTP Server Error: ${err.message}`);
+        });
+
         this.server.listen(this.config.ports.server, this.config.hostname);
 
         this.deviceService = soap.listen(this.server, {
@@ -351,7 +357,11 @@ module.exports = class OnvifServer {
             xml: fs.readFileSync('./wsdl/device_service.wsdl', 'utf8'),
             forceSoap12Headers: true
         });
-       
+
+        // Agregar manejador de errores para el servicio SOAP de dispositivo
+        this.deviceService.on('error', (err) => {
+            this.logger.error(`SERVER: ${this.config.name} - DeviceService Error: ${err.message}`);
+        });
 
         this.mediaService = soap.listen(this.server, {
             path: '/onvif/media_service',
@@ -359,7 +369,11 @@ module.exports = class OnvifServer {
             xml: fs.readFileSync('./wsdl/media_service.wsdl', 'utf8'),
             forceSoap12Headers: true
         });
-        
+
+        // Agregar manejador de errores para el servicio SOAP de medios
+        this.mediaService.on('error', (err) => {
+            this.logger.error(`SERVER: ${this.config.name} - MediaService Error: ${err.message}`);
+        });
     }
 
     enableDebugOutput() {
