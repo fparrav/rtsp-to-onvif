@@ -349,11 +349,13 @@ module.exports = class OnvifServer {
         // Agregar manejador de errores para el servidor HTTP
         this.server.on('error', (err) => {
             this.logger.error(`SERVER: ${this.config.name} - HTTP Server Error: ${err.message}`);
+            this.restartServer();
         });
 
         // Agregar manejador para el evento 'close' del servidor HTTP
         this.server.on('close', () => {
             this.logger.warn(`SERVER: ${this.config.name} - HTTP Server closed`);
+            this.restartServer();
         });
 
         this.server.listen(this.config.ports.server, this.config.hostname);
@@ -368,11 +370,13 @@ module.exports = class OnvifServer {
         // Agregar manejador de errores para el servicio SOAP de dispositivo
         this.deviceService.on('error', (err) => {
             this.logger.error(`SERVER: ${this.config.name} - DeviceService Error: ${err.message}`);
+            this.restartServer();
         });
 
         // Agregar manejador para el evento 'close' del servicio SOAP de dispositivo
         this.deviceService.on('close', () => {
             this.logger.warn(`SERVER: ${this.config.name} - DeviceService closed`);
+            this.restartServer();
         });
 
         this.mediaService = soap.listen(this.server, {
@@ -385,12 +389,21 @@ module.exports = class OnvifServer {
         // Agregar manejador de errores para el servicio SOAP de medios
         this.mediaService.on('error', (err) => {
             this.logger.error(`SERVER: ${this.config.name} - MediaService Error: ${err.message}`);
+            this.restartServer();
         });
 
         // Agregar manejador para el evento 'close' del servicio SOAP de medios
         this.mediaService.on('close', () => {
             this.logger.warn(`SERVER: ${this.config.name} - MediaService closed`);
+            this.restartServer();
         });
+    }
+
+    restartServer() {
+        this.logger.info(`SERVER: ${this.config.name} - Attempting to restart server in 5 seconds...`);
+        setTimeout(() => {
+            this.startHttpServer();
+        }, 5000);
     }
 
     enableDebugOutput() {
@@ -481,11 +494,19 @@ module.exports = class OnvifServer {
         this.discoverySocket.on('error', (err) => {
             this.logger.error(`SERVER: ${this.config.name} - Discovery Socket Error: ${err.message}`);
             this.discoverySocket.close();
+            this.restartDiscovery();
         });
 
         this.discoverySocket.bind(3702, () => {
             return this.discoverySocket.addMembership('239.255.255.250', this.config.hostname);
         });
+    }
+
+    restartDiscovery() {
+        this.logger.info(`SERVER: ${this.config.name} - Attempting to restart discovery in 5 seconds...`);
+        setTimeout(() => {
+            this.startDiscovery();
+        }, 5000);
     }
 
     getHostname() {
