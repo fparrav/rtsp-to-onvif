@@ -324,8 +324,6 @@ module.exports = class OnvifServer {
                 }
             }
         };
-
-        this.usedUuids = new Set();
     }
 
     listen(request, response) {
@@ -445,12 +443,6 @@ module.exports = class OnvifServer {
                     probeType = probeType._;
 
                 if (probeType === '' || probeType.indexOf('NetworkVideoTransmitter') > -1) {
-                    // Verificar si el UUID ya ha sido utilizado
-                    if (this.usedUuids.has(this.config.uuid)) {
-                        this.logger.warn(`SERVER: ${this.config.name} - UUID duplicado detectado: ${this.config.uuid}`);
-                        return;
-                    }
-
                     let response =
                         `<?xml version="1.0" encoding="UTF-8"?>
                         <SOAP-ENV:Envelope xmlns:SOAP-ENV="http://www.w3.org/2003/05/soap-envelope" xmlns:wsa="http://schemas.xmlsoap.org/ws/2004/08/addressing" xmlns:d="http://schemas.xmlsoap.org/ws/2005/04/discovery" xmlns:dn="http://www.onvif.org/ver10/network/wsdl">
@@ -484,7 +476,7 @@ module.exports = class OnvifServer {
 
                     this.discoveryMessageNo++;
                     let responseBuffer = Buffer.from(response);
-                    this.usedUuids.add(this.config.uuid); // Registrar el UUID como utilizado
+                    
                     return dgram.createSocket('udp4').send(responseBuffer, 0, responseBuffer.length, remote.port, remote.address);
                 }
             });
