@@ -24,7 +24,8 @@ module.exports = class OnvifServer {
         this.config = config;
         this.logger = logger;
 
-        this.config.hostname = getIp4FromMac(logger, this.config.mac);
+        // Asignar hostname desde la configuración en lugar de obtenerlo por MAC
+        this.config.hostname = this.config.target.hostname || getIp4FromMac(logger, this.config.mac);
         if (!this.config.hostname)
             return -1;
 
