@@ -477,7 +477,8 @@ module.exports = class OnvifServer {
                     this.discoveryMessageNo++;
                     let responseBuffer = Buffer.from(response);
                     
-                    return dgram.createSocket('udp4').send(responseBuffer, 0, responseBuffer.length, remote.port, remote.address);
+                    // Usar el socket existente para enviar la respuesta
+                    return this.discoverySocket.send(responseBuffer, 0, responseBuffer.length, remote.port, remote.address);
                 }
             });
         });
