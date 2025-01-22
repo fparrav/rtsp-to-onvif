@@ -344,7 +344,7 @@ module.exports = class OnvifServer {
     startHttpServer() {
         this.logger.info(`SERVER: ${this.config.name} - HTTP listening on ${this.config.hostname}:${this.config.ports.server}`);
 
-        this.server = http.createServer(this.listen);
+        this.server = http.createServer(this.listen.bind(this));
 
         // Agregar manejador de errores para el servidor HTTP
         this.server.on('error', (err) => {
@@ -499,6 +499,12 @@ module.exports = class OnvifServer {
 
         this.discoverySocket.bind(3702, () => {
             return this.discoverySocket.addMembership('239.255.255.250', this.config.hostname);
+        });
+
+        // Agregar manejador para el evento 'close' del socket de descubrimiento
+        this.discoverySocket.on('close', () => {
+            this.logger.warn(`SERVER: ${this.config.name} - Discovery Socket closed`);
+            this.restartDiscovery();
         });
     }
 
