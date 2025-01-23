@@ -1,12 +1,16 @@
-FROM node:22-alpine
+# Usar una imagen base multi-arquitectura
+FROM --platform=$BUILDPLATFORM node:22-alpine
 
- RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient
- ENV NODE_ENV=production
- WORKDIR /app
+RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient
 
- COPY ["package.json", "package-lock.json*", "./"]
- RUN npm ci --production --silent
+# Agregar build arguments para arquitectura
+ARG TARGETPLATFORM
+ENV NODE_ENV=production
+WORKDIR /app
 
- COPY . .
+COPY ["package.json", "package-lock.json*", "./"]
+RUN npm ci --production --silent
 
- CMD ["node", "main.js", "/onvif.yaml"]
+COPY . .
+
+CMD ["node", "main.js", "/onvif.yaml"]
