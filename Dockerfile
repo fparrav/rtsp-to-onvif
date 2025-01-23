@@ -1,5 +1,5 @@
-# Usar una imagen base multi-arquitectura
-FROM --platform=$BUILDPLATFORM node:22-alpine
+FROM node:22-alpine
+
 
 RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient
 
