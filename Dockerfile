@@ -1,15 +1,13 @@
-FROM node:22-alpine
-
+FROM node:20-alpine
 
 RUN apk add --no-cache --repository=https://dl-cdn.alpinelinux.org/alpine/v3.20/main dhclient
 
-# Agregar build arguments para arquitectura
-ARG TARGETPLATFORM
+
 ENV NODE_ENV=production
 WORKDIR /app
 
 COPY ["package.json", "package-lock.json*", "./"]
-RUN npm ci --production --silent
+RUN npm ci --production
 
 COPY . .
 
