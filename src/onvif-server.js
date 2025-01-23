@@ -283,11 +283,14 @@ module.exports = class OnvifServer {
                     },
 
                     GetVideoSources: (args) => {
-                        return {
+                        this.logger.debug(`Entering GetVideoSources with args: ${JSON.stringify(args)}`);
+                        const response = {
                             VideoSources: [
                                 this.videoSource
                             ]
                         };
+                        this.logger.debug(`GetVideoSources response: ${JSON.stringify(response)}`);
+                        return response;
                     },
 
                     GetSnapshotUri: (args) => {
@@ -417,6 +420,10 @@ module.exports = class OnvifServer {
 
         this.mediaService.on('close', () => {
             this.logger.warn(`Medios desconectados: ${this.config.name}`);
+        });
+
+        this.mediaService.on('request', (request, methodName) => {
+            this.logger.debug(`SERVER: ${this.config.name} -  MediaService: ${methodName}`);
         });
     }
 
