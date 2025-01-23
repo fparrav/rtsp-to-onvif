@@ -2,7 +2,7 @@ const soap = require('soap');
 const http = require('http');
 const dgram = require('dgram');
 const xml2js = require('xml2js');
-const uuid = require('node-uuid');
+const uuid = require('uuid'); // Reemplaza 'node-uuid' por 'uuid'
 const url = require('url');
 const fs = require('fs');
 const logger = require('simple-node-logger');
@@ -336,11 +336,13 @@ module.exports = class OnvifServer {
         let action = url.parse(request.url, true).pathname;
         this.logger.debug(`Solicitud recibida en: ${action} de ${request.socket.remoteAddress}`);
         
-        if (action == '/snapshot.png') {
+        if (action === '/snapshot.png') {
             let image = fs.readFileSync('./resources/snapshot.png');
             response.writeHead(200, { 'Content-Type': 'image/png' });
             response.end(image, 'binary');
             this.logger.info(`Snapshot servido para ${this.config.name}`);
+        } else if (action === '/onvif/device_service' || action === '/onvif/media_service') {
+            // ...existing manejo de SOAP...
         } else {
             response.writeHead(404, { 'Content-Type': 'text/plain' });
             response.write('404 Not Found\n');
