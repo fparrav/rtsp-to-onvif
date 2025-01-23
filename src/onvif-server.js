@@ -324,18 +324,25 @@ module.exports = class OnvifServer {
                 }
             }
         };
+
+        // Agregar registro al iniciar el servidor ONVIF
+        this.logger.info(`ONVIF Server iniciado para ${this.config.name} en ${this.config.hostname}:${this.config.ports.server}`);
     }
 
     listen(request, response) {
         let action = url.parse(request.url, true).pathname;
+        this.logger.debug(`Solicitud recibida en: ${action} de ${request.socket.remoteAddress}`);
+        
         if (action == '/snapshot.png') {
             let image = fs.readFileSync('./resources/snapshot.png');
             response.writeHead(200, { 'Content-Type': 'image/png' });
             response.end(image, 'binary');
+            this.logger.info(`Snapshot servido para ${this.config.name}`);
         } else {
             response.writeHead(404, { 'Content-Type': 'text/plain' });
             response.write('404 Not Found\n');
             response.end();
+            this.logger.warn(`Ruta no encontrada: ${action}`);
         }
     }
 
@@ -377,6 +384,14 @@ module.exports = class OnvifServer {
             this.restartServer();
         });
 
+        this.deviceService.on('connection', (socket) => {
+            this.logger.info(`Dispositivo conectado: ${socket.remoteAddress}:${socket.remotePort}`);
+        });
+
+        this.deviceService.on('close', () => {
+            this.logger.warn(`Dispositivo desconectado: ${this.config.name}`);
+        });
+
         this.mediaService = soap.listen(this.server, {
             path: '/onvif/media_service',
             services: this.onvif,
@@ -394,6 +409,14 @@ module.exports = class OnvifServer {
         this.mediaService.on('close', () => {
             this.logger.warn(`SERVER: ${this.config.name} - MediaService closed`);
             this.restartServer();
+        });
+
+        this.mediaService.on('connection', (socket) => {
+            this.logger.info(`Medios conectados: ${socket.remoteAddress}:${socket.remotePort}`);
+        });
+
+        this.mediaService.on('close', () => {
+            this.logger.warn(`Medios desconectados: ${this.config.name}`);
         });
     }
 
