@@ -311,18 +311,32 @@ module.exports = class OnvifServer {
                     },
 
                     GetStreamUri: (args) => {
-                        let path = this.config.highQuality.rtsp;
-                        if (args.ProfileToken == 'sub_stream' && this.config.lowQuality)
-                            path = this.config.lowQuality.rtsp;
-
-                        return {
-                            MediaUri: {
-                                Uri: `rtsp://${this.config.hostname}:${this.config.ports.rtsp}${path}`,
-                                InvalidAfterConnect: false,
-                                InvalidAfterReboot: false,
-                                Timeout: 'PT30S'
-                            }
-                        };
+                        try {
+                            let path = this.config.highQuality.rtsp;
+                            if (args.ProfileToken == 'sub_stream' && this.config.lowQuality)
+                                path = this.config.lowQuality.rtsp;
+                
+                            this.logger.debug(`GetStreamUri para path: ${path}`);
+                
+                            return {
+                                MediaUri: {
+                                    Uri: `rtsp://${this.config.hostname}:${this.config.ports.rtsp}${path}`,
+                                    InvalidAfterConnect: false,
+                                    InvalidAfterReboot: false,
+                                    Timeout: 'PT30S'
+                                }
+                            };
+                        } catch (error) {
+                            this.logger.error(`Error en GetStreamUri: ${error.message}`);
+                            return {
+                                MediaUri: {
+                                    Uri: '',
+                                    InvalidAfterConnect: true,
+                                    InvalidAfterReboot: true,
+                                    Timeout: 'PT30S'
+                                }
+                            };
+                        }
                     }
                 }
             }
@@ -333,21 +347,27 @@ module.exports = class OnvifServer {
     }
 
     listen(request, response) {
-        let action = url.parse(request.url, true).pathname;
-        this.logger.debug(`Solicitud recibida en: ${action} de ${request.socket.remoteAddress}`);
-        
-        if (action === '/snapshot.png') {
-            let image = fs.readFileSync('./resources/snapshot.png');
-            response.writeHead(200, { 'Content-Type': 'image/png' });
-            response.end(image, 'binary');
-            this.logger.info(`Snapshot servido para ${this.config.name}`);
-        } else if (action === '/onvif/device_service' || action === '/onvif/media_service') {
-            // ...existing manejo de SOAP...
-        } else {
-            response.writeHead(404, { 'Content-Type': 'text/plain' });
-            response.write('404 Not Found\n');
-            response.end();
-            this.logger.warn(`Ruta no encontrada: ${action}`);
+        try {
+            let action = url.parse(request.url, true).pathname;
+            this.logger.debug(`Solicitud recibida en: ${action} de ${request.socket.remoteAddress}`);
+            
+            if (action === '/snapshot.png') {
+                let image = fs.readFileSync('./resources/snapshot.png');
+                response.writeHead(200, { 'Content-Type': 'image/png' });
+                response.end(image, 'binary');
+                this.logger.info(`Snapshot servido para ${this.config.name}`);
+            } else if (action === '/onvif/device_service' || action === '/onvif/media_service') {
+                // ...existing manejo de SOAP...
+            } else {
+                response.writeHead(404, { 'Content-Type': 'text/plain' });
+                response.write('404 Not Found\n');
+                response.end();
+                this.logger.warn(`Ruta no encontrada: ${action}`);
+            }
+        } catch (error) {
+            this.logger.error(`Error en listen: ${error.message}`);
+            response.writeHead(500, { 'Content-Type': 'text/plain' });
+            response.end('Internal Server Error');
         }
     }
 
